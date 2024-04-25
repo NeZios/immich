@@ -95,6 +95,7 @@
 
   let name: string = data.person.name;
   let suggestedPeople: PersonResponseDto[] = [];
+  let abortController: AbortController | null = null;
 
   /**
    * Save the word used to search people name: for example,
@@ -111,9 +112,14 @@
     if ((people.length < maximumLengthSearchPeople && name.startsWith(searchWord)) || name === '') {
       return;
     }
+    if (abortController) {
+      abortController.abort();
+    }
+    abortController = new AbortController();
     const timeout = setTimeout(() => (isSearchingPeople = true), timeBeforeShowLoadingSpinner);
     try {
       people = await searchPerson({ name });
+      abortController = null;
       searchWord = name;
     } catch (error) {
       people = [];
